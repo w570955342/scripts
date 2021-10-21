@@ -1,0 +1,44 @@
+对于自建 MySQL , 需要先开启 Binlog 写入功能，配置 binlog-format 为 ROW 模式，my.cnf 中配置如下
+
+[mysqld]
+log-bin=mysql-bin # 开启 binlog
+binlog-format=ROW # 选择 ROW 模式
+server_id=1 # 配置 MySQL replaction 需要定义，不要和 canal 的 slaveId 重复
+注意：针对阿里云 RDS for MySQL , 默认打开了 binlog , 并且账号默认具有 binlog dump 权限 , 不需要任何权限或者 binlog 设置,可以直接跳过这一步
+授权 canal 链接 MySQL 账号具有作为 MySQL slave 的权限, 如果已有账户可直接 grant
+
+CREATE USER canal IDENTIFIED BY 'canal';
+GRANT SELECT, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'canal'@'%';
+-- GRANT ALL PRIVILEGES ON *.* TO 'canal'@'%' ;
+FLUSH PRIVILEGES;
+
+
+
+docker pull canal/canal-server:latest
+
+
+./run.sh -e canal.instance.master.address=39.101.131.239:3340 \
+     -e canal.instance.dbUsername=canal \
+     -e canal.instance.dbPassword=123456 \
+     -e canal.instance.connectionCharset=UTF-8 \
+     -e canal.instance.tsdb.enable=true \
+     -e canal.instance.gtidon=false \
+     -e canal.instance.filter.regex=.*\\..*
+
+
+sh run.sh -e canal.auto.scan=false \
+		  -e canal.destinations=test \
+		  -e canal.instance.master.address=39.101.131.239:3340  \
+		  -e canal.instance.dbUsername=canal  \
+		  -e canal.instance.dbPassword=123456  \
+		  -e canal.instance.connectionCharset=UTF-8 \
+		  -e canal.instance.tsdb.enable=true \
+		  -e canal.instance.gtidon=false  \
+
+
+下载adapter:
+    https://github.com/alibaba/canal/releases/download/canal-1.1.5/canal.adapter-1.1.5.tar.gz
+
+修改配置，配置canal-server端口
+firewall-cmd --zone=public --add-port=11111/tcp --permanent
+firewall-cmd --reload
