@@ -33,8 +33,31 @@
 
 dataSourceKey: defaultDS
 destination: example
+#groupId: g1
 outerAdapterKey: mysql1
 concurrent: true
 dbMapping:
   mirrorDb: true
   database: iot
+
+#dataSourceKey: defaultDS
+#destination: example
+#groupId: g1
+#outerAdapterKey: mysql1
+#concurrent: true
+#dbMapping:
+#  #配置数据库--主库
+#  database: canal_tsdb
+#  #配置表--主库
+#  table: test1
+#  #从库
+#  targetTable: bqorderdb.test2
+#  targetPk:
+#    idid: id
+#  #如果两张表的结构是一样的话，直接设置为true
+#  #mapAll: true
+#  targetColumns:
+#    #从表字段名字: 主表字段名字
+#    idid: id
+#    name: name
+#    address: address

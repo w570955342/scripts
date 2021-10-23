@@ -18,7 +18,7 @@ docker pull canal/canal-server:latest
 
 
 ./run.sh -e canal.instance.master.address=39.101.131.239:3340 \
-     -e canal.instance.dbUsername=canal \
+     -e canal.instance.dbUsername=root \
      -e canal.instance.dbPassword=123456 \
      -e canal.instance.connectionCharset=UTF-8 \
      -e canal.instance.tsdb.enable=true \
@@ -26,14 +26,14 @@ docker pull canal/canal-server:latest
      -e canal.instance.filter.regex=.*\\..*
 
 
-sh run.sh -e canal.auto.scan=false \
+./run.sh -e canal.auto.scan=false \
 		  -e canal.destinations=test \
 		  -e canal.instance.master.address=39.101.131.239:3340  \
-		  -e canal.instance.dbUsername=canal  \
+		  -e canal.instance.dbUsername=root  \
 		  -e canal.instance.dbPassword=123456  \
 		  -e canal.instance.connectionCharset=UTF-8 \
 		  -e canal.instance.tsdb.enable=true \
-		  -e canal.instance.gtidon=false  \
+		  -e canal.instance.gtidon=false
 
 
 下载adapter:
