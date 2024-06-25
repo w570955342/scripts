@@ -1,0 +1,29 @@
+
+# A服务器装有待备份的influx数据库，在B服务器执行指令操作，备份A服务器的influx数据库文件到B服务器的某个目录。
+# B服务器需要有influxd命令，安装一个influx容器就可以
+
+# A服务器准备工作
+# 修改docker-compose.yml文件，暴露influx数据库的8088端口供B服务器后续备份使用
+  influx:
+    container_name: influx
+    image: influxdb:1.8.10-alpine
+    ports:
+    - 8088:8088
+
+# B服务器操作
+# influx容器需要先挂载一个路径到宿主机，避免因为容器内复制文件到宿主机占用空间，把容器内路径/tsdb_backup挂载到宿主机/opt/tsdb_backup
+  influx:
+    container_name: influx
+    image: influxdb:1.8.10-alpine
+    volumes:
+    - /opt/tsdb_backup:/tsdb_backup
+
+# 进入B服务器的influx容器
+docker exec -it influx sh
+
+# 执行备份命令，将A数据库的数据备份到容器内的特定目录/tsdb_backup，
+influxd backup -host A服务器内网ip:8088  -portable -db tsdb /tsdb_backup
+
+# 宿主机/opt/tsdb_backup下的文件就是备份出的文件
+
+# 走内网 32G的数据，备份出来，26.8G，内存3.4G，耗时10分钟。期间数据库可以正常查询写入。

@@ -65,6 +65,24 @@ influxd restore -portable -db tsdb /backup/all
 # 指定tsdb并且重命名为abc
 influxd restore -portable -db tsdb -newdb abc /backup/all
 
+influxd restore -portable -db example_db /example_db
+
 # 错误基本上都是
 # error updating meta: DB metadata not changed. database may already exist
 # restore: DB metadata not changed. database may already exist
+
+
+# 在另外一台服务器导出
+# influxd backup -host 192.168.1.100:8088 -username admin -password secretpassword /path/to/backup
+# 上述命令不对，没有-username和-password选项
+# 在airiot.tech的inlfux1容器，airiot.tech的influx容器暴露的端口是18088:8088，没有认证也备份成功了，并且还原到了influx1
+influxd backup -host airiot.tech:18088 -portable -db example_db /example_db
+./influxd.exe backup -portable -db example_db -host airiot.tech:18088  ./example_db
+
+influxd restore -portable -db example_db /example_db
+
+setx INFLUX_USERNAME "admin"
+setx INFLUX_PASSWORD "dell123"
+
+export INFLUX_USERNAME=backup_user
+export INFLUX_PASSWORD=secretpassword
