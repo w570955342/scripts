@@ -86,3 +86,68 @@ setx INFLUX_PASSWORD "dell123"
 
 export INFLUX_USERNAME=backup_user
 export INFLUX_PASSWORD=secretpassword
+
+
+
+# 测试指令
+influx_inspect export -database tsdb -out /var/lib/influxdb/export/tsdb_export.txt -datadir /var/lib/influxdb/data -waldir /var/lib/influxdb/wal
+influx_inspect export -compress -database 625f6dbf5433487131f09ff7 -out /var/lib/influxdb/export/625f6dbf5433487131f09ff7_export.tar.gz -datadir /var/lib/influxdb/data -waldir /var/lib/influxdb/wal
+
+influx -import -path=/var/lib/influxdb/export/625f6dbf5433487131f09ff7_export.txt -database=tsdb -username=admin -password=dell123
+influx -import -path=/var/lib/influxdb/export/625f6dbf5433487131f09ff7_xiuzheng_export.txt  -database=tsdb -username=admin -password=dell123
+
+# 正式指令
+# 注意事项
+# 导出的数据就是一个文件，需要vi删除文件头部的注释和创建数据库信息，因为执行文件会解析这些
+# influx要使用超哥手动编译的执行文件，可以指定数据库（原来的数据库信息从文件的注释信息里取的），必须加上-dataonly参数，也是单独加的参数
+# 执行文件就是目录下的文件
+
+# 不压缩
+influx_inspect export -database tsdb -out /var/lib/influxdb/export/tsdb_export.txt -datadir /var/lib/influxdb/data -waldir /var/lib/influxdb/wal
+
+# 压缩
+influx_inspect export -compress -database tsdb -out /var/lib/influxdb/export/tsdb_export.txt.zip -datadir /var/lib/influxdb/data -waldir /var/lib/influxdb/wal
+
+# 客户平台data目录164G，压缩格式导出，用了15个小时，文件153G。
+
+
+# 还原
+influx -dataonly -import -path=/var/lib/influxdb/export/tsdb_export.txt -database=tsdb -username=admin -password=dell123
+
+
+
+tar -czvf tsdb_export.tar.gz tsdb_export.txt
+
+
+# 用自己编译的influx_inspect
+#  -ignores string
+#    	忽略的表名列表. 多个表名之间使用 ',' 分隔
+#  -lponly
+#    	Only export line protocol
+#  -mapping string
+#    	表名映射文件. 每行对应一个映射关系, 格式为: 原始表名=映射后表名
+
+# 测试
+# 库名 625f6dbf5433487131f09ff7
+# 表名
+  #测试名称
+  #测试普通表
+  #测试设备地址空
+  #绑定系统变量
+  #网络检查
+  #网络检查新
+  #网络检查继承
+
+./influx_inspect export -compress  -lponly -ignores 测试名称,测试普通表 -mapping map.txt -database 625f6dbf5433487131f09ff7 -out /var/lib/influxdb/export/625f6dbf5433487131f09ff7_export.zip -datadir /var/lib/influxdb/data -waldir /var/lib/influxdb/wal
+
+nohup ./influx_inspect export -compress  -lponly -ignores 测试名称,测试普通表 -mapping map.txt -database 625f6dbf5433487131f09ff7 -out /var/lib/influxdb/export/625f6dbf5433487131f09ff7_export.zip -datadir /var/lib/influxdb/data -waldir /var/lib/influxdb/wal >> export.log 2>&1 &
+
+# 还原
+nohup ./influx -dataonly -compressed -import -path=/var/lib/influxdb/export/625f6dbf5433487131f09ff7_export.zip -database=tsdb -username=admin -password=dell123 >> import.log 2>&1 &
+
+
+# 正式环境
+nohup ./influx_inspect export -compress  -lponly -ignores 63f813b5ad9a1bdb93ee483f_63f8183bede9893a5aec31ad,63f813b5ad9a1bdb93ee483f_63f8185eede9893a5aec31af -mapping map.txt -database tsdb -out /var/lib/influxdb/export/tsdb_export_xiugai.zip -datadir /var/lib/influxdb/data -waldir /var/lib/influxdb/wal >> export.log 2>&1 &
+
+# 还原
+nohup ./influx -dataonly -compressed -import -path=/var/lib/influxdb/export/tsdb_export_xiugai.zip -database=tsdb -username=admin -password=dell123 >> import.log 2>&1 &
